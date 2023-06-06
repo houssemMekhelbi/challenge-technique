@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/testdb
+    username: quarkus_test
+    password: quarkus_test
+
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+
+# App Properties
+bezkoder:
+  app:
+    jwtCookieName: bezkoder
+    jwtSecret: "o8hqH5GAfTuNlE0RKmQ7XX4jvPgi3sbWU7d6rS9LcJ1z4YH2pnwF0VuyIMtBkOD"
+    jwtExpirationMs: 86400000
