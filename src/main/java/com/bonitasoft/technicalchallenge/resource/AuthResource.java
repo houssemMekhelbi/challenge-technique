@@ -3,8 +3,8 @@ package com.bonitasoft.technicalchallenge.resource;
 import com.bonitasoft.technicalchallenge.model.ERole;
 import com.bonitasoft.technicalchallenge.model.Role;
 import com.bonitasoft.technicalchallenge.model.User;
-import com.bonitasoft.technicalchallenge.payload.request.LoginRequest;
-import com.bonitasoft.technicalchallenge.payload.request.SignupRequest;
+import com.bonitasoft.technicalchallenge.payload.request.auth.LoginRequest;
+import com.bonitasoft.technicalchallenge.payload.request.auth.SignupRequest;
 import com.bonitasoft.technicalchallenge.payload.response.MessageResponse;
 import com.bonitasoft.technicalchallenge.payload.response.UserInfoResponse;
 import com.bonitasoft.technicalchallenge.repository.RoleRepository;
@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/auth")
-public class AuthController {
+public class AuthResource {
     @Autowired
     AuthenticationManager authenticationManager;
 
@@ -101,8 +101,8 @@ public class AuthController {
                                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                         roles.add(adminRole);
                     }
-                    case "mod" -> {
-                        Role modRole = roleRepository.findByName(ERole.ROLE_MODERATOR)
+                    case "chef" -> {
+                        Role modRole = roleRepository.findByName(ERole.ROLE_CHEF)
                                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                         roles.add(modRole);
                     }

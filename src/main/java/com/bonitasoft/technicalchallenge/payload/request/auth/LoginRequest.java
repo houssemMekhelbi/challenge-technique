@@ -1,4 +1,4 @@
-package com.bonitasoft.technicalchallenge.payload.request;
+package com.bonitasoft.technicalchallenge.payload.request.auth;
 
 import jakarta.validation.constraints.NotBlank;
 

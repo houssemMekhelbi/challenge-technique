@@ -25,6 +25,13 @@ public class Recipe {
     public Recipe() {
     }
 
+    public Recipe(String title, String ingredients, User author, String keywords) {
+        this.title = title;
+        this.ingredients = ingredients;
+        this.author = author;
+        this.keywords = keywords;
+    }
+
     public Recipe(Long id, String title, String ingredients, User author, String keywords, List<Comment> comments) {
         this.id = id;
         this.title = title;
