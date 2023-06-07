@@ -10,6 +10,7 @@ import com.bonitasoft.technicalchallenge.payload.response.UserInfoResponse;
 import com.bonitasoft.technicalchallenge.repository.RoleRepository;
 import com.bonitasoft.technicalchallenge.repository.UserRepository;
 import com.bonitasoft.technicalchallenge.security.jwt.JwtUtils;
+import com.bonitasoft.technicalchallenge.security.services.EmailService;
 import com.bonitasoft.technicalchallenge.security.services.UserDetailsImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,10 @@ public class AuthResource {
 
     @Autowired
     JwtUtils jwtUtils;
+
+    @Autowired
+    private EmailService emailService;
+
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -117,7 +122,8 @@ public class AuthResource {
 
         user.setRoles(roles);
         userRepository.save(user);
-
+        // Send the welcome email
+        emailService.sendWelcomeEmail(user.getEmail());
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
 

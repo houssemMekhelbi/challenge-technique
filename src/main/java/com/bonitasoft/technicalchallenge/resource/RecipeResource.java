@@ -1,10 +1,13 @@
 package com.bonitasoft.technicalchallenge.resource;
 
+import com.bonitasoft.technicalchallenge.model.Comment;
 import com.bonitasoft.technicalchallenge.model.Recipe;
 import com.bonitasoft.technicalchallenge.model.User;
+import com.bonitasoft.technicalchallenge.payload.request.recipe.CreateCommentRequest;
 import com.bonitasoft.technicalchallenge.payload.request.recipe.CreateRecipeRequest;
 import com.bonitasoft.technicalchallenge.payload.request.recipe.UpdateRecipeRequest;
 import com.bonitasoft.technicalchallenge.payload.response.MessageResponse;
+import com.bonitasoft.technicalchallenge.repository.CommentRepository;
 import com.bonitasoft.technicalchallenge.repository.RecipeRepository;
 import com.bonitasoft.technicalchallenge.repository.UserRepository;
 import com.bonitasoft.technicalchallenge.security.jwt.AuthTokenFilter;
@@ -19,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,16 +38,24 @@ public class RecipeResource {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    CommentRepository commentRepository;
+
     @PostMapping()
     @PreAuthorize("hasRole('CHEF')")
     public ResponseEntity<?> createRecipe(@Valid @RequestBody CreateRecipeRequest createRecipeRequest) {
-        return userRepository.findById(createRecipeRequest.getAuthor())
-                .map(user -> {
-                    Recipe recipe = new Recipe(createRecipeRequest.getTitle(), createRecipeRequest.getIngredients(), user, createRecipeRequest.getKeywords());
-                    Recipe saved = recipeRepository.save(recipe);
-                    return ResponseEntity.ok().body(saved);
-                })
-                .orElse(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Error: Author not found")));
+        try {
+            User user = userRepository.findById(createRecipeRequest.getAuthor())
+                    .orElseThrow(() -> new RuntimeException("Error: Author not found"));
+
+            Recipe recipe = new Recipe(createRecipeRequest.getTitle(), createRecipeRequest.getIngredients(), user, createRecipeRequest.getKeywords());
+            Recipe saved = recipeRepository.save(recipe);
+            return ResponseEntity.ok().body(saved);
+        } catch (Exception e) {
+            logger.error("Error occurred while creating a recipe", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MessageResponse("Error occurred while creating a recipe"));
+        }
     }
 
     @GetMapping()
@@ -53,10 +65,11 @@ public class RecipeResource {
             return ResponseEntity.ok().body(recipes);
         } catch (Exception e) {
             logger.error("Error occurred while retrieving recipes", e);
-            return ResponseEntity.internalServerError()
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new MessageResponse("Error occurred while retrieving recipes"));
         }
     }
+
     @PutMapping()
     @PreAuthorize("hasRole('CHEF')")
     public ResponseEntity<?> updateRecipe(@Valid @RequestBody UpdateRecipeRequest updateRecipeRequest, Authentication authentication) {
@@ -79,5 +92,62 @@ public class RecipeResource {
         }
     }
 
+    @DeleteMapping("/{recipeId}")
+    @PreAuthorize("hasRole('CHEF')")
+    public ResponseEntity<?> deleteRecipe(@PathVariable Long recipeId, Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
 
+        Optional<Recipe> optionalRecipe = recipeRepository.findById(recipeId);
+        if (optionalRecipe.isPresent()) {
+            Recipe recipe = optionalRecipe.get();
+
+            // Check if the authenticated user is the author (chef) of the recipe
+            if (recipe.getAuthor().getId().equals(user.getId())) {
+                recipeRepository.delete(recipe);
+                return ResponseEntity.noContent().build();
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(new MessageResponse("Error: You are not allowed to delete this recipe"));
+            }
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchRecipes(@RequestParam("keywords") List<String> keywords) {
+        List<Recipe> recipes = recipeRepository.findByKeywordsInIgnoreCase(keywords);
+
+        if (recipes.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        } else {
+            return ResponseEntity.ok().body(recipes);
+        }
+    }
+
+    @PostMapping("/{recipeId}/comments")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> addCommentToRecipe(@PathVariable("recipeId") Long recipeId, @Valid @RequestBody CreateCommentRequest createCommentRequest) {
+        // Check if the recipe exists
+        Optional<Recipe> optionalRecipe = recipeRepository.findById(recipeId);
+        if (!optionalRecipe.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Get the authenticated user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+
+        // Create the comment
+        Comment comment = new Comment();
+        comment.setText(createCommentRequest.getContent());
+        comment.setAuthor(user);
+        comment.setRecipe(optionalRecipe.get());
+        comment.setTimestamp(LocalDateTime.now());
+
+        // Save the comment
+        Comment savedComment = commentRepository.save(comment);
+
+        return ResponseEntity.ok().body(savedComment);
+    }
 }
