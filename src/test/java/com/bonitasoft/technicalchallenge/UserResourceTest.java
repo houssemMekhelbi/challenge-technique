@@ -2,6 +2,7 @@ package com.bonitasoft.technicalchallenge;
 
 import com.bonitasoft.technicalchallenge.resource.UserResource;
 import com.bonitasoft.technicalchallenge.security.services.UserDetailsImpl;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -38,8 +39,9 @@ public class UserResourceTest {
         when(userDetails.getId()).thenReturn(1L);
         when(userDetails.getUsername()).thenReturn("john");
         when(userDetails.getEmail()).thenReturn("john@example.com");
-        Collection<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
-        when(userDetails.getAuthorities()).thenReturn(authorities);
+        Collection grantedAuthorities =
+                Lists.newArrayList(new SimpleGrantedAuthority("ROLE_USER"));
+        when(userDetails.getAuthorities()).thenReturn(grantedAuthorities);
 
         ResultActions resultActions = mockMvc.perform(get("/api/user/profile")
                 .contentType(MediaType.APPLICATION_JSON));
@@ -61,8 +63,10 @@ public class UserResourceTest {
         when(userDetails.getId()).thenReturn(1L);
         when(userDetails.getUsername()).thenReturn("alice");
         when(userDetails.getEmail()).thenReturn("alice@example.com");
-        Collection<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_CHEF"));
-        when(userDetails.getAuthorities()).thenReturn(authorities);
+        Collection grantedAuthorities =
+                Lists.newArrayList(new SimpleGrantedAuthority("ROLE_CHEF"));
+
+        when(userDetails.getAuthorities()).thenReturn(grantedAuthorities);
 
         ResultActions resultActions = mockMvc.perform(get("/api/user/profile")
                 .contentType(MediaType.APPLICATION_JSON));
@@ -84,8 +88,10 @@ public class UserResourceTest {
         when(userDetails.getId()).thenReturn(1L);
         when(userDetails.getUsername()).thenReturn("admin");
         when(userDetails.getEmail()).thenReturn("admin@example.com");
-        Collection<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"));
-        when(userDetails.getAuthorities()).thenReturn(authorities);
+        Collection grantedAuthorities =
+                Lists.newArrayList(
+                        new SimpleGrantedAuthority("ROLE_ADMIN"));
+        when(userDetails.getAuthorities()).thenReturn(grantedAuthorities);
 
         ResultActions resultActions = mockMvc.perform(get("/api/user/profile")
                 .contentType(MediaType.APPLICATION_JSON));
