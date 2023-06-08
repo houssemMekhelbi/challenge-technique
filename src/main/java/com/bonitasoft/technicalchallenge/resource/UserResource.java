@@ -2,6 +2,8 @@ package com.bonitasoft.technicalchallenge.resource;
 
 import com.bonitasoft.technicalchallenge.payload.response.UserInfoResponse;
 import com.bonitasoft.technicalchallenge.security.services.UserDetailsImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/user")
 public class UserResource {
+    private static final Logger logger = LoggerFactory.getLogger(UserResource.class);
 
 
     @GetMapping("/profile")
@@ -36,7 +39,10 @@ public class UserResource {
                 userDetails.getEmail(),
                 roles);
 
-        return ResponseEntity.ok().body(userInfoResponse);
+        return ResponseEntity.ok().body(new UserInfoResponse(userInfoResponse.getId(),
+                userInfoResponse.getUsername(),
+                userInfoResponse.getEmail(),
+                roles));
     }
 
 }

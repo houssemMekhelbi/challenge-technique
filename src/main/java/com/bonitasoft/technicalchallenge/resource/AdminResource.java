@@ -5,9 +5,13 @@ import com.bonitasoft.technicalchallenge.model.Role;
 import com.bonitasoft.technicalchallenge.model.User;
 import com.bonitasoft.technicalchallenge.payload.request.auth.SignupRequest;
 import com.bonitasoft.technicalchallenge.payload.response.MessageResponse;
+import com.bonitasoft.technicalchallenge.payload.response.UserInfoResponse;
 import com.bonitasoft.technicalchallenge.repository.RoleRepository;
 import com.bonitasoft.technicalchallenge.repository.UserRepository;
+import com.bonitasoft.technicalchallenge.security.services.UserDetailsImpl;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,11 +19,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/admin")
 public class AdminResource {
+    private static final Logger logger = LoggerFactory.getLogger(AdminResource.class);
+
     @Autowired
     UserRepository userRepository;
     @Autowired
@@ -31,7 +38,21 @@ public class AdminResource {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllUsers() {
         List<User> users = userRepository.findAll();
-        return ResponseEntity.ok().body(users);
+        List<UserInfoResponse> userInfoResponses = users.stream()
+                .map(user -> {
+                    List<String> roleNames = user.getRoles().stream()
+                            .map(role -> role.getName().name())
+                            .collect(Collectors.toList());
+
+                    return new UserInfoResponse(
+                            user.getId(),
+                            user.getUsername(),
+                            user.getEmail(),
+                            roleNames
+                    );
+                })
+                .toList();
+        return ResponseEntity.ok().body(userInfoResponses);
     }
 
     @DeleteMapping("/users/{userId}")

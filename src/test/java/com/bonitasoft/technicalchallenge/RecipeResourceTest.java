@@ -6,15 +6,12 @@ import com.bonitasoft.technicalchallenge.model.User;
 import com.bonitasoft.technicalchallenge.payload.request.recipe.CreateCommentRequest;
 import com.bonitasoft.technicalchallenge.payload.request.recipe.CreateRecipeRequest;
 import com.bonitasoft.technicalchallenge.payload.request.recipe.UpdateRecipeRequest;
-import com.bonitasoft.technicalchallenge.payload.response.MessageResponse;
 import com.bonitasoft.technicalchallenge.repository.CommentRepository;
 import com.bonitasoft.technicalchallenge.repository.RecipeRepository;
 import com.bonitasoft.technicalchallenge.repository.UserRepository;
 import com.bonitasoft.technicalchallenge.resource.RecipeResource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -52,7 +49,6 @@ public class RecipeResourceTest {
         CreateRecipeRequest request = new CreateRecipeRequest();
         request.setTitle("Test Recipe");
         request.setIngredients("Ingredient 1, Ingredient 2");
-        request.setAuthor(1L);
         request.setKeywords("");
 
         // Mock user repository

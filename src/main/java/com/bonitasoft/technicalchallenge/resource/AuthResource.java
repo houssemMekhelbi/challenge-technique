@@ -13,6 +13,8 @@ import com.bonitasoft.technicalchallenge.security.jwt.JwtUtils;
 import com.bonitasoft.technicalchallenge.security.services.EmailService;
 import com.bonitasoft.technicalchallenge.security.services.UserDetailsImpl;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -34,6 +36,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthResource {
+    private static final Logger logger = LoggerFactory.getLogger(AuthResource.class);
+
     @Autowired
     AuthenticationManager authenticationManager;
 
@@ -55,7 +59,7 @@ public class AuthResource {
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-
+        logger.info("request" + loginRequest);
         Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 

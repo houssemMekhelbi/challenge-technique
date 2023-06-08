@@ -8,8 +8,6 @@ public class CreateRecipeRequest {
     @NotBlank
     private String ingredients;
     @NotBlank
-    private long author;
-    @NotBlank
     private String keywords;
 
     public String getTitle() {
@@ -26,14 +24,6 @@ public class CreateRecipeRequest {
 
     public void setIngredients(String ingredients) {
         this.ingredients = ingredients;
-    }
-
-    public long getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(long author) {
-        this.author = author;
     }
 
     public String getKeywords() {

@@ -10,7 +10,7 @@ import com.bonitasoft.technicalchallenge.payload.response.MessageResponse;
 import com.bonitasoft.technicalchallenge.repository.CommentRepository;
 import com.bonitasoft.technicalchallenge.repository.RecipeRepository;
 import com.bonitasoft.technicalchallenge.repository.UserRepository;
-import com.bonitasoft.technicalchallenge.security.jwt.AuthTokenFilter;
+import com.bonitasoft.technicalchallenge.security.services.UserDetailsImpl;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +30,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/recipe")
 public class RecipeResource {
-    private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(RecipeResource.class);
 
     @Autowired
     RecipeRepository recipeRepository;
@@ -43,14 +43,16 @@ public class RecipeResource {
 
     @PostMapping()
     @PreAuthorize("hasRole('CHEF')")
-    public ResponseEntity<?> createRecipe(@Valid @RequestBody CreateRecipeRequest createRecipeRequest) {
+    public ResponseEntity<?> createRecipe(@Valid @RequestBody CreateRecipeRequest createRecipeRequest, Authentication authentication) {
         try {
-            User user = userRepository.findById(createRecipeRequest.getAuthor())
-                    .orElseThrow(() -> new RuntimeException("Error: Author not found"));
+            UserDetailsImpl user = (UserDetailsImpl) authentication.getPrincipal();
+            Optional<User> userOptional = userRepository.findByUsername(user.getUsername());
 
-            Recipe recipe = new Recipe(createRecipeRequest.getTitle(), createRecipeRequest.getIngredients(), user, createRecipeRequest.getKeywords());
-            Recipe saved = recipeRepository.save(recipe);
-            return ResponseEntity.ok().body(saved);
+            return userOptional.map(user1 -> {
+                Recipe recipe = new Recipe(createRecipeRequest.getTitle(), createRecipeRequest.getIngredients(), user1, createRecipeRequest.getKeywords());
+                Recipe saved = recipeRepository.save(recipe);
+                return ResponseEntity.ok(saved);
+            }).orElseThrow(() -> new RuntimeException("Error: getting chef details."));
         } catch (Exception e) {
             logger.error("Error occurred while creating a recipe", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -116,8 +118,9 @@ public class RecipeResource {
 
     @GetMapping("/search")
     public ResponseEntity<?> searchRecipes(@RequestParam("keywords") List<String> keywords) {
+        logger.info("keywordss" + keywords);
         List<Recipe> recipes = recipeRepository.findByKeywordsInIgnoreCase(keywords);
-
+        logger.info("result"+recipes);
         if (recipes.isEmpty()) {
             return ResponseEntity.notFound().build();
         } else {
