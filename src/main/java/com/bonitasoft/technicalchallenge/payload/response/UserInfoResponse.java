@@ -42,4 +42,14 @@ public class UserInfoResponse {
 	public List<String> getRoles() {
 		return roles;
 	}
+
+	@Override
+	public String toString() {
+		return "UserInfoResponse{" +
+				"id=" + id +
+				", username='" + username + '\'' +
+				", email='" + email + '\'' +
+				", roles=" + roles +
+				'}';
+	}
 }

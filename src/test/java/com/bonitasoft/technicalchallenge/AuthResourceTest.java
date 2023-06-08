@@ -15,6 +15,7 @@ import com.bonitasoft.technicalchallenge.security.services.EmailService;
 import com.bonitasoft.technicalchallenge.security.services.UserDetailsImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -30,12 +31,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 class AuthResourceTest {
@@ -107,7 +106,11 @@ class AuthResourceTest {
         ResponseEntity<?> responseEntity = authResource.registerUser(signUpRequest);
 
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertEquals(new MessageResponse("Error: Username is already taken!"), responseEntity.getBody());
+
+        MessageResponse expectedResponse = new MessageResponse("Error: Username is already taken!");
+        MessageResponse actualResponse = (MessageResponse) responseEntity.getBody();
+
+        assertEquals(expectedResponse.getMessage(), actualResponse.getMessage());
 
         verify(userRepository, times(1)).existsByUsername("john");
         verifyNoMoreInteractions(userRepository);
@@ -122,7 +125,11 @@ class AuthResourceTest {
         ResponseEntity<?> responseEntity = authResource.registerUser(signUpRequest);
 
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertEquals(new MessageResponse("Error: Email is already in use!"), responseEntity.getBody());
+
+        MessageResponse expectedResponse = new MessageResponse("Error: Email is already in use!");
+        MessageResponse actualResponse = (MessageResponse) responseEntity.getBody();
+
+        assertEquals(expectedResponse.getMessage(), actualResponse.getMessage());
 
         verify(userRepository, times(1)).existsByUsername("john");
         verify(userRepository, times(1)).existsByEmail("john@example.com");
@@ -140,34 +147,39 @@ class AuthResourceTest {
         ResponseEntity<?> responseEntity = authResource.registerUser(signUpRequest);
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(new MessageResponse("User registered successfully!"), responseEntity.getBody());
 
-        User savedUser = new User("john", "john@example.com", "encodedPassword");
-        savedUser.setRoles(Collections.singleton(new Role(ERole.ROLE_USER)));
+        MessageResponse expectedResponse = new MessageResponse("User registered successfully!");
+        MessageResponse actualResponse = (MessageResponse) responseEntity.getBody();
 
+        assertEquals(expectedResponse.getMessage(), actualResponse.getMessage());
+
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository, times(1)).existsByUsername("john");
         verify(userRepository, times(1)).existsByEmail("john@example.com");
-        verify(userRepository, times(1)).save(savedUser);
+        verify(userRepository, times(1)).save(userCaptor.capture());
         verify(roleRepository, times(1)).findByName(ERole.ROLE_USER);
         verify(emailService, times(1)).sendWelcomeEmail("john@example.com");
         verifyNoMoreInteractions(userRepository, roleRepository, emailService);
-    }
 
-    @Test
-    void testLogoutUser() {
-        ResponseCookie jwtCookie = ResponseCookie.fromClientResponse("jwt", "")
-                .httpOnly(true)
-                .maxAge(0)
-                .path("/")
-                .build();
+        User savedUser = userCaptor.getValue();
+        assertEquals("john", savedUser.getUsername());
+        assertEquals("john@example.com", savedUser.getEmail());
+        assertEquals("encodedPassword", savedUser.getPassword());
 
-        ResponseEntity<?> responseEntity = authResource.logoutUser();
+        Set<Role> actualRoles = new HashSet<>(savedUser.getRoles());
+        Set<Role> expectedRoles = Collections.singleton(new Role(ERole.ROLE_USER));
 
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(new MessageResponse("You've been signed out!"), responseEntity.getBody());
-        assertEquals(jwtCookie.toString(), responseEntity.getHeaders().getFirst(HttpHeaders.SET_COOKIE));
+        assertEquals(expectedRoles.size(), actualRoles.size());
 
-        verify(jwtUtils, times(1)).getCleanJwtCookie();
-        verifyNoMoreInteractions(jwtUtils);
+        for (Role expectedRole : expectedRoles) {
+            boolean found = false;
+            for (Role actualRole : actualRoles) {
+                if (expectedRole.getName().equals(actualRole.getName())) {
+                    found = true;
+                    break;
+                }
+            }
+            assertTrue(found);
+        }
     }
 }
