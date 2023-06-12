@@ -1,11 +1,15 @@
 package com.bonitasoft.technicalchallenge.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Entity
-public class Recipe {
+public class Recipe implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,11 +19,14 @@ public class Recipe {
     private String ingredients;
 
     @ManyToOne
+    @JsonManagedReference
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User author;
 
     private String keywords;
 
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Comment> comments;
 
     public Recipe() {

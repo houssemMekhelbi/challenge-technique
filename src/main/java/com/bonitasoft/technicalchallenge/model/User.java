@@ -1,10 +1,12 @@
 package com.bonitasoft.technicalchallenge.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,7 +16,7 @@ import java.util.Set;
            @UniqueConstraint(columnNames = "username"),
            @UniqueConstraint(columnNames = "email")
        })
-public class User {
+public class User implements Serializable {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -30,6 +32,7 @@ public class User {
 
   @NotBlank
   @Size(max = 120)
+  @JsonIgnore
   private String password;
 
   @ManyToMany(fetch = FetchType.LAZY)

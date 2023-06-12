@@ -2,9 +2,11 @@ package com.bonitasoft.technicalchallenge.model;
 
 import jakarta.persistence.*;
 
+import java.io.Serializable;
+
 @Entity
 @Table(name = "roles")
-public class Role {
+public class Role implements Serializable {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
@@ -13,9 +15,7 @@ public class Role {
   @Column(length = 20)
   private ERole name;
 
-  public Role() {
-
-  }
+  public Role() {}
 
   public Role(ERole name) {
     this.name = name;

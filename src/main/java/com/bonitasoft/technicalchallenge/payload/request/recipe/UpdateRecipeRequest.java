@@ -1,6 +1,7 @@
 package com.bonitasoft.technicalchallenge.payload.request.recipe;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public class UpdateRecipeRequest {
     private Long id;
@@ -8,7 +9,7 @@ public class UpdateRecipeRequest {
     private String title;
     @NotBlank
     private String ingredients;
-    @NotBlank
+    @NotNull
     private long author;
     @NotBlank
     private String keywords;

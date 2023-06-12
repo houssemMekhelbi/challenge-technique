@@ -14,10 +14,10 @@ spring:
     hibernate:
       ddl-auto: update
   mail:
-    host: smtp.mandrillapp.com
+    host: smtp.gmail.com
     port: 587
-    username: houssem.mekhelbi@proton.me
-    password: "664d9563f2f6a158e1d9d169bafc6c07-us21"
+    username: houssemchallengetech@gmail.com
+    password: bjdfhbzqrjdivtce
     properties:
       mail:
         smtp:
@@ -26,8 +26,8 @@ spring:
             enable: true
 
 # App Properties
-bezkoder:
+cooking:
   app:
-    jwtCookieName: bezkoder
+    jwtCookieName: cooking
     jwtSecret: "o8hqH5GAfTuNlE0RKmQ7XX4jvPgi3sbWU7d6rS9LcJ1z4YH2pnwF0VuyIMtBkOD"
     jwtExpirationMs: 86400000

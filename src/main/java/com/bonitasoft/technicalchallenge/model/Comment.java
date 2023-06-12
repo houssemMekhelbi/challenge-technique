@@ -1,11 +1,14 @@
 package com.bonitasoft.technicalchallenge.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
-public class Comment {
+public class Comment implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,15 +17,16 @@ public class Comment {
     private String text;
 
     @ManyToOne
+    @JsonManagedReference
     private User author;
 
     @ManyToOne
+    @JsonIgnore
     private Recipe recipe;
 
     private LocalDateTime timestamp;
 
-    public Comment() {
-    }
+    public Comment() {}
 
     public Comment(Long id, String text, User author, Recipe recipe, LocalDateTime timestamp) {
         this.id = id;
