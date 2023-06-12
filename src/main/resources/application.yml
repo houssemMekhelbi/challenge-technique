@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/testdb
+    username: quarkus_test
+    password: quarkus_test
+
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: houssemchallengetech@gmail.com
+    password: bjdfhbzqrjdivtce
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# App Properties
+cooking:
+  app:
+    jwtCookieName: cooking
+    jwtSecret: "o8hqH5GAfTuNlE0RKmQ7XX4jvPgi3sbWU7d6rS9LcJ1z4YH2pnwF0VuyIMtBkOD"
+    jwtExpirationMs: 86400000
